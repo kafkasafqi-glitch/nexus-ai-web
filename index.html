@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS AI</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b1020;
+      color: white;
+      display: flex;
+      min-height: 100vh;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .app {
+      width: 100%;
+      max-width: 650px;
+      background: #151c30;
+      padding: 30px;
+      border-radius: 20px;
+      border: 1px solid #293550;
+    }
+    h1 { color: #70a5ff; margin-top: 0; }
+    #chat {
+      height: 300px;
+      overflow-y: auto;
+      background: #0b1020;
+      border-radius: 12px;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    .msg { margin-bottom: 15px; line-height: 1.5; }
+    .user { color: #80b5ff; }
+    .ai { color: #b9c7df; }
+    input {
+      width: 100%;
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid #33415e;
+      background: #0b1020;
+      color: white;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 15px;
+      margin-top: 10px;
+      border: 0;
+      border-radius: 10px;
+      background: #3978f6;
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover { background: #5590ff; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>✦ NEXUS AI</h1>
+    <p>Asisten AI pribadi lu.</p>
+    <div id="chat">
+      <div class="msg ai">NEXUS AI: Halo! Selamat datang. Web NEXUS AI berhasil dibuka. Backend AI belum terhubung.</div>
+    </div>
+    <input id="prompt" placeholder="Tulis pesan..." />
+    <button onclick="send()">Kirim</button>
+  </div>
+
+  <script>
+    function send() {
+      const input = document.getElementById('prompt');
+      const chat = document.getElementById('chat');
+      const text = input.value.trim();
+      if (!text) return;
+
+      chat.innerHTML += '<div class="msg user">Lu: ' + escapeHTML(text) + '</div>';
+      chat.innerHTML += '<div class="msg ai">NEXUS AI: Tampilan web berhasil berjalan. AI belum terhubung ke server.</div>';
+      input.value = '';
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function escapeHTML(str) {
+      return str.replace(/[&<>"']/g, c => ({
+        '&':'&amp;', '<':'&lt;', '>':'&gt;',
+        '"':'&quot;', "'":'&#39;'
+      }[c]));
+    }
+  </script>
+</body>
+</html>
