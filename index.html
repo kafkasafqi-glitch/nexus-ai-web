@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -28,14 +27,14 @@
     }
     h1 { color: #70a5ff; margin-top: 0; }
     #chat {
-      height: 300px;
+      height: 380px;
       overflow-y: auto;
       background: #0b1020;
       border-radius: 12px;
       padding: 15px;
       margin: 20px 0;
     }
-    .msg { margin-bottom: 15px; line-height: 1.5; }
+    .msg { margin-bottom: 15px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
     .user { color: #80b5ff; }
     .ai { color: #b9c7df; }
     input {
@@ -59,39 +58,79 @@
       font-size: 16px;
       cursor: pointer;
     }
-    button:hover { background: #5590ff; }
+    button:disabled { opacity: .6; cursor: wait; }
+    button:hover:not(:disabled) { background: #5590ff; }
   </style>
 </head>
 <body>
   <div class="app">
     <h1>✦ NEXUS AI</h1>
     <p>Asisten AI pribadi lu.</p>
-    <div id="chat">
-      <div class="msg ai">NEXUS AI: Halo! Selamat datang. Web NEXUS AI berhasil dibuka. Backend AI belum terhubung.</div>
+    <div id="chat" aria-live="polite">
+      <div class="msg ai">NEXUS AI: Halo! Gue NEXUS AI. Ada yang bisa gue bantu?</div>
     </div>
-    <input id="prompt" placeholder="Tulis pesan..." />
-    <button onclick="send()">Kirim</button>
+    <input id="prompt" placeholder="Tulis pesan..." autocomplete="off" />
+    <button id="sendButton" onclick="send()">Kirim</button>
   </div>
 
   <script>
-    function send() {
-      const input = document.getElementById('prompt');
-      const chat = document.getElementById('chat');
-      const text = input.value.trim();
-      if (!text) return;
+    const API_URL = 'https://nexus-ai-api.kafkasafqi.workers.dev/api/chat';
+    const messages = [];
+    const input = document.getElementById('prompt');
+    const chat = document.getElementById('chat');
+    const sendButton = document.getElementById('sendButton');
 
-      chat.innerHTML += '<div class="msg user">Lu: ' + escapeHTML(text) + '</div>';
-      chat.innerHTML += '<div class="msg ai">NEXUS AI: Tampilan web berhasil berjalan. AI belum terhubung ke server.</div>';
-      input.value = '';
+    function addMessage(label, text, className) {
+      const item = document.createElement('div');
+      item.className = 'msg ' + className;
+      item.textContent = label + ': ' + text;
+      chat.appendChild(item);
       chat.scrollTop = chat.scrollHeight;
+      return item;
     }
 
-    function escapeHTML(str) {
-      return str.replace(/[&<>"']/g, c => ({
-        '&':'&amp;', '<':'&lt;', '>':'&gt;',
-        '"':'&quot;', "'":'&#39;'
-      }[c]));
+    async function send() {
+      const text = input.value.trim();
+      if (!text || sendButton.disabled) return;
+
+      addMessage('Lu', text, 'user');
+      messages.push({ role: 'user', content: text });
+      input.value = '';
+      sendButton.disabled = true;
+      sendButton.textContent = 'NEXUS AI sedang mengetik...';
+      const loading = addMessage('NEXUS AI', 'Sedang berpikir...', 'ai');
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Permintaan gagal (' + response.status + ')');
+        }
+        if (typeof data.reply !== 'string' || !data.reply.trim()) {
+          throw new Error('Server tidak mengirim jawaban yang valid.');
+        }
+
+        loading.textContent = 'NEXUS AI: ' + data.reply;
+        messages.push({ role: 'assistant', content: data.reply });
+      } catch (error) {
+        loading.textContent = 'NEXUS AI: Maaf bro, ada kendala menghubungi server. ' + error.message;
+        messages.pop();
+      } finally {
+        sendButton.disabled = false;
+        sendButton.textContent = 'Kirim';
+        chat.scrollTop = chat.scrollHeight;
+        input.focus();
+      }
     }
+
+    input.addEventListener('keydown', event => {
+      if (event.key === 'Enter') send();
+    });
   </script>
 </body>
 </html>
