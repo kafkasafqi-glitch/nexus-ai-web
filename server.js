@@ -34,7 +34,7 @@ app.post("/api/chat", async (req, res) => {
       return res.status(400).json({ error: "Pesan terakhir harus berasal dari pengguna." });
     }
 
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent", {
+    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent", {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
       body: JSON.stringify({
